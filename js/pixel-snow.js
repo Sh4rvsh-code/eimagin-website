@@ -163,18 +163,14 @@
 
   /* ─── init ───────────────────────────────────────────────────────── */
   function init() {
-    console.log('[PixelSnow] Init called');
     var container = document.getElementById('pixel-snow');
-    if (!container) { console.error('[PixelSnow] #pixel-snow not found'); return; }
-    console.log('[PixelSnow] Container found:', container);
+    if (!container) return;
 
     var hero = container.parentElement;
-    console.log('[PixelSnow] Hero:', hero, 'Size:', hero ? hero.offsetWidth+'x'+hero.offsetHeight : 'N/A');
 
     var canvas = document.createElement('canvas');
     canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none;';
     container.appendChild(canvas);
-    console.log('[PixelSnow] Canvas created & appended');
 
     var dpr = 1; // Force 1x DPR for performance
     var w   = (hero ? hero.offsetWidth  : window.innerWidth)  || window.innerWidth;
@@ -183,7 +179,6 @@
     canvas.style.height = '100%';
     canvas.width  = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
-    console.log('[PixelSnow] Canvas size:', canvas.width + 'x' + canvas.height, '@' + dpr + 'x DPR');
 
     var gl = canvas.getContext('webgl2', {
       alpha: true, antialias: false,
@@ -191,8 +186,7 @@
       powerPreference: 'high-performance',
       depth: false, stencil: false
     });
-    if (!gl) { console.error('[PixelSnow] WebGL2 not supported in this browser'); return; }
-    console.log('[PixelSnow] WebGL2 context created');
+    if (!gl) return;
 
     var vert = compileShader(gl, VERT, gl.VERTEX_SHADER);
     var frag = compileShader(gl, FRAG, gl.FRAGMENT_SHADER);
@@ -207,8 +201,6 @@
       return;
     }
     gl.useProgram(prog);
-    console.log('[PixelSnow] ✓ Shader compiled and linked successfully');
-    console.log('[PixelSnow] Starting render setup...');
 
     /* full-screen quad */
     var vbo = gl.createBuffer();
@@ -270,7 +262,6 @@
 
     /* render loop */
     var start = performance.now();
-    console.log('[PixelSnow] Starting render loop...');
     (function loop() {
       requestAnimationFrame(loop);
       if (!isVisible) return;

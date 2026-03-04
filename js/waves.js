@@ -205,7 +205,6 @@
     setLines();
     requestAnimationFrame(tick);
 
-    console.log('[Waves] Initialized');
   }
 
   if (document.readyState === 'complete') {

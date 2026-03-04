@@ -27,11 +27,11 @@ window.addEventListener('scroll', () => {
     const navInner = document.querySelector('.nav-inner');
     if (!navInner) return;
     if (window.scrollY > 50) {
-        navInner.style.background = 'rgba(20, 20, 30, 0.78)';
+        navInner.style.background = 'rgba(8, 8, 14, 0.82)';
         navInner.style.boxShadow = '0 8px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)';
     } else {
-        navInner.style.background = 'rgba(26, 26, 36, 0.55)';
-        navInner.style.boxShadow = '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)';
+        navInner.style.background = 'rgba(12, 12, 18, 0.5)';
+        navInner.style.boxShadow = '0 8px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)';
     }
 });
 
@@ -64,40 +64,22 @@ document.querySelectorAll('.service-card, .project-card, .about-card, .feature-i
 
 const contactForm = document.getElementById('contactForm');
 
-contactForm.addEventListener('submit', (e) => {
+if (contactForm) {
+  contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    // Get form data
     const formData = {
         name: document.getElementById('name').value,
         email: document.getElementById('email').value,
         message: document.getElementById('message').value
     };
 
-    // Simulate form submission (replace with actual backend call)
-    console.log('Form submitted:', formData);
-
-    // Show success message
     alert("Thank you for your message! We'll get back to you soon.");
 
-    // Reset form
     contactForm.reset();
 
-    // In production, replace the above with:
-    // fetch('/api/contact', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(formData)
-    // })
-    // .then(response => response.json())
-    // .then(data => {
-    //     alert('Message sent successfully!');
-    //     contactForm.reset();
-    // })
-    // .catch(error => {
-    //     alert('Error sending message. Please try again.');
-    // });
-});
+  });
+}
 
 // ===================================
 // SMOOTH SCROLL ENHANCEMENT
@@ -172,96 +154,6 @@ if (typeof CardSwap !== 'undefined') {
 }
 */
 
-// ===================================
-// PROJECT SLIDER
-// ===================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Project Slider: Initializing...');
-    
-    const slides = document.querySelectorAll('.project-card-featured');
-    const prevBtn = document.querySelector('.prev-btn');
-    const nextBtn = document.querySelector('.next-btn');
-    const dots = document.querySelectorAll('.dot');
-    
-    console.log('📊 Found elements:', { 
-        slides: slides.length, 
-        prevBtn: !!prevBtn, 
-        nextBtn: !!nextBtn, 
-        dots: dots.length 
-    });
-    
-    // Only run if slider exists
-    if (!slides.length || !prevBtn || !nextBtn) {
-        console.error('❌ Project Slider: Missing required elements');
-        return;
-    }
-    
-    let currentSlide = 0;
-    
-    function showSlide(index) {
-        console.log(`🔄 Switching to slide ${index} (from ${currentSlide})`);
-        
-        // Handle wrapping around
-        let newIndex = index;
-        if (index >= slides.length) newIndex = 0;
-        if (index < 0) newIndex = slides.length - 1;
-        
-        currentSlide = newIndex;
-        
-        // Remove active class from all
-        slides.forEach((slide, i) => {
-            slide.style.opacity = '0';
-            slide.style.transform = 'translateX(100px) scale(0.95)';
-            slide.style.pointerEvents = 'none';
-            slide.style.zIndex = '1';
-            slide.classList.remove('active');
-            console.log(`  Hide slide ${i}`);
-        });
-        
-        dots.forEach(dot => dot.classList.remove('active'));
-        
-        // Show current slide
-        const activeSlide = slides[currentSlide];
-        
-        // Force reflow to ensure transition works
-        void activeSlide.offsetWidth; 
-        
-        activeSlide.style.opacity = '1';
-        activeSlide.style.transform = 'translateX(0) scale(1)';
-        activeSlide.style.pointerEvents = 'auto';
-        activeSlide.style.zIndex = '10';
-        activeSlide.classList.add('active');
-        
-        console.log(`  ✅ Show slide ${currentSlide}`);
-        
-        if (dots[currentSlide]) dots[currentSlide].classList.add('active');
-    }
-    
-    // Event Listeners
-    nextBtn.addEventListener('click', () => {
-        console.log('👉 Next button clicked');
-        showSlide(currentSlide + 1);
-    });
-    
-    prevBtn.addEventListener('click', () => {
-        console.log('👈 Prev button clicked');
-        showSlide(currentSlide - 1);
-    });
-    
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-            console.log(`🔘 Dot ${index} clicked`);
-            showSlide(index);
-        });
-    });
-    
-    // Initialize first slide state explicitly
-    console.log('🎬 Initializing first slide...');
-    showSlide(0);
-    
-    console.log('✅ Project Slider: Initialization complete!');
-});
 
 // ===================================
 // PIXEL SNOW FOR CONTACT SECTION

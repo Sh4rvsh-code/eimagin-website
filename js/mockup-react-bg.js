@@ -138,7 +138,6 @@ void main() {
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     })();
 
-    console.log('[MockupReactBg] Initialized');
   }
 
   if (document.readyState === 'complete') {

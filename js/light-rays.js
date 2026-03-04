@@ -251,7 +251,6 @@ void main() {
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     })();
 
-    console.log('[LightRays] Initialized successfully');
   }
 
   if (document.readyState === 'complete') {

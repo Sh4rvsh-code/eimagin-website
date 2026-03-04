@@ -1,94 +1,87 @@
-// Solution Cards Scroll Animation
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.solution-card');
-    const solutionSection = document.querySelector('.our-solution');
-    
-    if (!cards.length || !solutionSection) return;
+// ===================================
+// SOLUTION SECTION — SCROLL-DRIVEN CARD SWAP
+// ===================================
+//
+// Architecture:
+//   .our-solution          — 300 vh tall, normal flow
+//   .our-solution > .container — also 300 vh (gives sticky room)
+//   .solution-content      — position:sticky; top:0; height:100vh
+//                            stays glued to viewport during the scroll
+//   .solution-cards-wrapper — position:relative; fixed height
+//   .solution-card ×3      — position:absolute, all stacked, only one visible
+//
+// Scroll progress (0→1) maps:
+//   0.00 – 0.34  → card 0 (Design)
+//   0.34 – 0.67  → card 1 (Branding)
+//   0.67 – 1.00  → card 2 (Development)
 
-    function handleScroll() {
-        const sectionTop = solutionSection.offsetTop;
-        const sectionHeight = solutionSection.offsetHeight;
-        const scrollPosition = window.scrollY;
-        const windowHeight = window.innerHeight;
+document.addEventListener('DOMContentLoaded', function () {
+    const section = document.querySelector('.our-solution');
+    const cards   = document.querySelectorAll('.solution-card');
+    const steps   = document.querySelectorAll('.solution-step');
 
-        // Calculate progress through the section (0 to 1)
-        const scrollStart = sectionTop - windowHeight / 2;
-        const scrollEnd = sectionTop + sectionHeight - windowHeight / 2;
-        const totalScrollDistance = scrollEnd - scrollStart;
-        const currentScroll = scrollPosition - scrollStart;
-        const sectionProgress = Math.max(0, Math.min(1, currentScroll / totalScrollDistance));
+    if (!section || !cards.length) return;
 
-        // Determine which card should be active based on scroll progress
-        // Divide the section into equal parts for each card
-        const totalCards = cards.length;
-        const progressPerCard = 1 / totalCards;
+    let currentIndex = -1;
+    let exitTimer    = null;
 
-        cards.forEach((card, index) => {
-            // Calculate the range for this card
-            const cardStartProgress = index * progressPerCard;
-            const cardEndProgress = (index + 1) * progressPerCard;
-            
-            // Calculate how far we are within this card's range
-            let cardProgress = 0;
-            
-            if (sectionProgress >= cardStartProgress && sectionProgress <= cardEndProgress) {
-                // We're in this card's range
-                cardProgress = (sectionProgress - cardStartProgress) / progressPerCard;
-            } else if (sectionProgress > cardEndProgress) {
-                // We've passed this card
-                cardProgress = 1;
-            }
+    // ── Show the card at `newIndex`, animate out the previous one ──────────
+    function activate(newIndex) {
+        if (newIndex === currentIndex) return;
 
-            // Determine visibility
-            let opacity, scale, blur, zIndex;
-            
-            if (sectionProgress >= cardStartProgress && sectionProgress < cardEndProgress) {
-                // This is the active card
-                const fadeInProgress = Math.min(1, cardProgress * 3); // Fade in quickly
-                opacity = fadeInProgress;
-                scale = 0.95 + (fadeInProgress * 0.05);
-                blur = Math.max(0, 3 - (fadeInProgress * 3));
-                zIndex = 10;
-                card.classList.add('active');
-            } else if (sectionProgress >= cardEndProgress) {
-                // Card has been passed, fade it out
-                const fadeOutStart = cardEndProgress;
-                const fadeOutEnd = Math.min(cardEndProgress + 0.1, 1);
-                const fadeOutProgress = (sectionProgress - fadeOutStart) / (fadeOutEnd - fadeOutStart);
-                opacity = Math.max(0, 1 - fadeOutProgress);
-                scale = 1;
-                blur = 0;
-                zIndex = 5;
-                card.classList.remove('active');
-            } else {
-                // Card hasn't appeared yet
-                opacity = 0;
-                scale = 0.95;
-                blur = 3;
-                zIndex = 1;
-                card.classList.remove('active');
-            }
-            
-            // Apply transformations
-            card.style.opacity = opacity;
-            card.style.transform = `scale(${scale})`;
-            card.style.filter = `blur(${blur}px)`;
-            card.style.zIndex = zIndex;
+        const prev = currentIndex;
+        currentIndex = newIndex;
+
+        // Trigger exit on the old card
+        if (prev >= 0) {
+            clearTimeout(exitTimer);
+            cards[prev].classList.remove('active');
+            cards[prev].classList.add('exit');
+            exitTimer = setTimeout(() => cards[prev].classList.remove('exit'), 600);
+        }
+
+        // Clean up any lingering states on all other cards
+        cards.forEach((c, i) => {
+            if (i !== prev) c.classList.remove('active', 'exit');
         });
+
+        // Activate the new card
+        cards[newIndex].classList.add('active');
+
+        // Sync step indicators
+        steps.forEach((s, i) => s.classList.toggle('active', i === newIndex));
     }
 
-    // Throttle scroll event for performance
+    // ── Calculate which card should be active based on scroll position ─────
+    function onScroll() {
+        const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+        const sectionH   = section.offsetHeight;
+        const viewportH  = window.innerHeight;
+
+        // How far the user has scrolled past the section's top edge
+        const scrolled = window.scrollY - sectionTop;
+
+        // The sticky element (100vh) is visible for (sectionH - viewportH) px of scroll
+        const range = sectionH - viewportH;
+
+        if (range <= 0) { activate(0); return; }
+
+        const progress = Math.max(0, Math.min(1, scrolled / range));
+
+        const idx = progress < 0.34 ? 0 : progress < 0.67 ? 1 : 2;
+        activate(idx);
+    }
+
+    // ── Throttle via rAF for 60fps ─────────────────────────────────────────
     let ticking = false;
-    window.addEventListener('scroll', function() {
+    window.addEventListener('scroll', () => {
         if (!ticking) {
-            window.requestAnimationFrame(function() {
-                handleScroll();
-                ticking = false;
-            });
+            requestAnimationFrame(() => { onScroll(); ticking = false; });
             ticking = true;
         }
-    });
+    }, { passive: true });
 
-    // Initial call
-    handleScroll();
+    // ── Init ───────────────────────────────────────────────────────────────
+    activate(0);   // make card 0 visible immediately
+    onScroll();    // sync to current scroll position on load
 });
